@@ -1,0 +1,28 @@
+@* Usability 1: Vores custom control viser databasens rækkeantal. *@
+@inject Feedr.DBAccess.Repository Repository
+
+<div class="db-service">
+    <h3>Database Service</h3>
+	@ChildContent
+    <ul>
+        @foreach (var kvp in recordCounts)
+        {
+            <li>@kvp.Key: @kvp.Value records</li>
+        }   
+    </ul>
+</div>
+
+@code {
+	[Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string TableName { get; set; } = "";
+    private Dictionary<string, int> recordCounts = []; 
+
+    protected override void OnInitialized() => LoadTable();
+    public void LoadTable()
+    {
+        // Gem hvert tabelnavn sammen med antallet af records i tabellen.
+        recordCounts = Repository.GetTableNames().ToDictionary(
+            tableName => tableName,
+            tableName => Repository.GetRecordCount(tableName));
+    }
+}

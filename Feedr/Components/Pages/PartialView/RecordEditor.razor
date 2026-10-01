@@ -1,0 +1,179 @@
+@using System.Data
+@using System.Data.Common
+@using System.Globalization
+@using Microsoft.JSInterop
+@inject Feedr.DBAccess.Repository Repository
+@inject IJSRuntime JS
+
+@* Usability 1: Partial view med samme redigeringsvindue og formular til alle tabeller. *@
+<dialog @ref="dialog" aria-labelledby="record-title" @onkeydown="HandleKey">
+    <h2 id="record-title">@(IsNew ? Translations.NewRecord(Language) : Translations.EditRecord(Language)) · @TableName</h2>
+
+    <form @onsubmit="Save" @onsubmit:preventDefault>
+        @foreach (DataColumn column in Table.Columns)
+        {
+            <p>
+                <label for="@($"edit-{column.ColumnName}")">@column.ColumnName</label><br />
+                @if (IsNew && column.AutoIncrement)
+                {
+                    <input id="@($"edit-{column.ColumnName}")" value="@Translations.Automatic(Language)" disabled />
+                }
+                else if (column.DataType == typeof(bool))
+                {
+                    <input id="@($"edit-{column.ColumnName}")" type="checkbox"
+                           disabled="@IsReadOnly(column)"
+                           checked="@(values[column.ColumnName] == "True")"
+                           @onchange="@(e => values[column.ColumnName] = e.Value?.ToString() ?? "False")" />
+                }
+                else
+                {
+                    <input id="@($"edit-{column.ColumnName}")" type="@InputType(column)"
+                           @bind="values[column.ColumnName]" disabled="@IsReadOnly(column)"
+                           required="@(!column.AllowDBNull && !IsReadOnly(column))"
+                           maxlength="@(column.MaxLength > 0 ? column.MaxLength : (int?)null)"
+                           step="@(column.DataType == typeof(int) ? "1" : "any")" />
+                }
+            </p>
+        }
+
+        @if (errorMessage != "")
+        {
+            <p role="alert">@errorMessage</p>
+        }
+
+        <button type="submit">@Translations.Save(Language)</button>
+        <button type="button" @onclick="() => Closed.InvokeAsync()">@Translations.Cancel(Language)</button>
+
+        @if (!IsNew)
+        {
+            @if (!confirmDelete)
+            {
+                <button type="button" @onclick="() => confirmDelete = true">@Translations.Delete(Language)</button>
+            }
+            else
+            {
+                <p>@Translations.DeleteQuestion(Language)</p>
+                <button type="button" @onclick="Delete">@Translations.ConfirmDelete(Language)</button>
+                <button type="button" @onclick="() => confirmDelete = false">@Translations.KeepRecord(Language)</button>
+            }
+        }
+    </form>
+</dialog>
+
+@code {
+    [Parameter] public string TableName { get; set; } = "";
+    [Parameter] public DataTable Table { get; set; } = new();
+    [Parameter] public DataRow? Row { get; set; }
+    [Parameter] public Language Language { get; set; } = Language.Danish;
+    [Parameter] public EventCallback Saved { get; set; }
+    [Parameter] public EventCallback Closed { get; set; }
+
+    private ElementReference dialog;
+    private readonly Dictionary<string, string> values = new();
+    private Dictionary<string, string> originalValues = new();
+    private string errorMessage = "";
+    private bool confirmDelete;
+    private bool IsNew => Row is null;
+
+    // Felterne er en kopi. Annuller ændrer derfor hverken tabellen eller databasen.
+    protected override void OnInitialized()
+    {
+        foreach (DataColumn column in Table.Columns)
+        {
+            object value = Row?[column] ?? DBNull.Value;
+            if (IsNew && column.DataType == typeof(bool)) value = false;
+            if (IsNew && column.DataType == typeof(DateTime)) value = DateTime.UtcNow;
+
+            values[column.ColumnName] = value is DateTime date
+                ? date.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture)
+                : Convert.ToString(value, CultureInfo.InvariantCulture) ?? "";
+        }
+        originalValues = new(values);
+    }
+
+    // Browserens indbyggede dialog giver fokus og spærrer siden bag vinduet.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("showRecordEditor", dialog);
+    }
+
+    private async Task HandleKey(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+            await Closed.InvokeAsync();
+    }
+
+    // Eksisterende nøgler og automatisk tildelte felter må ikke ændres.
+    private bool IsReadOnly(DataColumn column) =>
+        column.ReadOnly || column.AutoIncrement || (!IsNew && Table.PrimaryKey.Contains(column));
+
+    private string InputType(DataColumn column)
+    {
+        if (column.ColumnName == "Password") return "password";
+        if (column.DataType == typeof(DateTime)) return "datetime-local";
+        if (column.DataType == typeof(int) || column.DataType == typeof(decimal)) return "number";
+        return "text";
+    }
+
+    // PDF 2, 1.1: Gem-klikket sender kun den oprettede eller redigerede række til Repository.
+    private async Task Save()
+    {
+        errorMessage = "";
+        try
+        {
+            var changes = Table.Clone();
+            if (!IsNew) changes.ImportRow(Row!);
+            var record = IsNew ? changes.NewRow() : changes.Rows[0];
+
+            foreach (DataColumn column in Table.Columns)
+            {
+                // Kontrollér også låsen på serveren, hvis HTML-feltet bliver manipuleret.
+                if (IsReadOnly(column))
+                {
+                    if (values[column.ColumnName] != originalValues[column.ColumnName])
+                        throw new ReadOnlyException();
+                    continue;
+                }
+                string value = values[column.ColumnName];
+                // Bevar uændrede værdier præcist, også datoers ekstra decimaler.
+                if (!IsNew && value == originalValues[column.ColumnName]) continue;
+                record[column.ColumnName] = value == ""
+                    ? DBNull.Value
+                    : Convert.ChangeType(value, column.DataType, CultureInfo.InvariantCulture);
+            }
+
+            if (IsNew) changes.Rows.Add(record);
+            Repository.SaveChanges(TableName, changes);
+        }
+        catch (ReadOnlyException)
+        {
+            errorMessage = Translations.LockedFieldsError(Language);
+            return;
+        }
+        catch (Exception error) when (error is DbException or DataException or FormatException or OverflowException)
+        {
+            errorMessage = Translations.SaveError(Language);
+            return;
+        }
+        await Saved.InvokeAsync();
+    }
+
+    private async Task Delete()
+    {
+        errorMessage = "";
+        try
+        {
+            var changes = Table.Clone();
+            changes.ImportRow(Row!);
+            changes.Rows[0].Delete(); // Markér rækken til sletning i databasen.
+            Repository.SaveChanges(TableName, changes);
+        }
+        catch (Exception error) when (error is DbException or DataException)
+        {
+            errorMessage = Translations.DeleteError(Language);
+            return;
+        }
+        await Saved.InvokeAsync();
+    }
+}

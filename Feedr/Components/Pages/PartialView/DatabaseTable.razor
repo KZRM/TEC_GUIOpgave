@@ -1,0 +1,136 @@
+@using System.Data
+@using System.Data.Common
+@inject Feedr.DBAccess.Repository Repository
+
+@* Usability 1: Partial view for den valgte tabel. Blazor opdaterer kun denne del af siden. *@
+@if (!string.IsNullOrEmpty(TableName))
+{
+    <h2>@TableName</h2>
+
+    @if (errorMessage != ""){<p role="alert">@errorMessage</p>}
+    
+    else if (data is not null)
+    {
+        @* Ny og rediger åbner den samme formular. *@
+        <button type="button" @onclick="() => OpenEditor(null)">@Translations.NewRecord(Language)</button>
+
+        @if (changesSaved){<p role="status">@Translations.ChangesSaved(Language)</p>}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    @* Kolonnenavnene bruges som overskrifter. *@
+                    @foreach (DataColumn column in data.Columns)
+                    {
+                        <th scope="col">@column.ColumnName</th>
+                    }
+                    <th scope="col">@Translations.Actions(Language)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @* Vis højst 100 rækker på den aktuelle side. *@
+                @foreach (var row in data.Rows.Cast<DataRow>().Take(PageSize))
+                {
+                    <tr>
+                        @foreach (DataColumn column in data.Columns)
+                        {
+                            @* Vis cellens værdi, men skjul adgangskoder. *@
+                            <td>@(column.ColumnName == "Password" ? "••••••" : row[column])</td>
+                        }
+                        <td>
+                            <button type="button" @onclick="() => OpenEditor(row)"
+                                    aria-label="@($"{Translations.EditRecord(Language)} {row[0]}")"
+                                    title="@Translations.Edit(Language)">✎</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (data.Rows.Count == 0)
+        {
+            <p>Tabellen er tom.</p>
+        }
+
+        @* Sprogvalget ændrer teksten, mens tabellen bliver på samme side. *@
+        <p>@Translations.PageInfo(Language, page + 1, PageSize)</p>
+
+        @* En ekstra hentet række fortæller, om Næste-knappen skal være aktiv. *@
+        <button type="button" @onclick="() => ChangePage(-1)" disabled="@(page == 0)">@Translations.Previous(Language)</button>
+        <button type="button" @onclick="() => ChangePage(1)" disabled="@(data.Rows.Count <= PageSize)">@Translations.Next(Language)</button>
+
+        @if (editorOpen)
+        {
+            <RecordEditor TableName="@TableName" Table="@data" Row="@selectedRow" Language="@Language"
+                          Saved="RecordSaved" Closed="CloseEditor" />
+        }
+    }
+}
+
+@code {
+    // Home sender tabelnavnet og det valgte sprog hertil.
+    [Parameter] public string TableName { get; set; } = "";
+    [Parameter] public Language Language { get; set; } = Language.Danish;
+    [Parameter] public EventCallback DataChanged { get; set; }
+
+    private DataTable? data; // Indeholder tabellens kolonner og rækker.
+    private string errorMessage = ""; // Tom tekst betyder, at der ikke er en fejl.
+    private int page; // Første side har nummer 0 i koden.
+    private const int PageSize = 100;
+    private bool editorOpen;
+    private bool changesSaved;
+    private DataRow? selectedRow; // null betyder, at vi opretter en ny post.
+
+    // Knappens klik kalder denne event handler.
+    private void OpenEditor(DataRow? row)
+    {
+        selectedRow = row;
+        changesSaved = false;
+        editorOpen = true;
+    }
+
+    private void CloseEditor() => editorOpen = false;
+
+    // Formularen giver besked efter gem eller slet. Opdater kun tabelvisningen.
+    private async Task RecordSaved()
+{
+    CloseEditor();
+    LoadTable();
+
+    if (page > 0 && data?.Rows.Count == 0)
+    {
+        page--;
+        LoadTable();
+    }
+
+    changesSaved = true;
+
+    // Giv Home besked om, at databasen er ændret.
+    await DataChanged.InvokeAsync();
+}
+
+    // Hent data ved oprettelse.
+    // Ved tabelskift ændres @key, så Blazor opretter en ny DatabaseTable.
+    protected override void OnInitialized() => LoadTable();
+
+    private void LoadTable()
+    {
+        if (string.IsNullOrEmpty(TableName)) return;
+
+        data = null;
+        errorMessage = ""; // Fjern en tidligere fejl - når henter data igen.
+        
+        try // Prøv at hente den valgte tabel.
+        { data = Repository.GetTable(TableName, page, PageSize); }
+        
+        catch (DbException) // Databaseforbindelsen fejlede: errormsg
+        { errorMessage = "Tabellen kunne ikke hentes. Kontrollér databaseforbindelsen."; }
+    }
+
+    private void ChangePage(int direction)
+    {
+        if (data is null) return;
+        page += direction;
+        LoadTable();
+    }
+}

@@ -1,0 +1,213 @@
+/* Sidens grundlayout. */
+html, body {
+    font-family: Arial, sans-serif;
+    color: #222;
+    background: #f4f4f4;
+}
+
+header[role="toolbar"] {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+main {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
+h1 {
+    margin: 1.5rem 0;
+    font-size: 2rem;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+h3 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.splitContainer {
+    display: grid;
+    /* Venstre får 30 %, højre får 70 % af pladsen efter mellemrummet. */
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+    align-items: start;
+    gap: 1.25rem;
+}
+
+.baseContainer {
+    min-width: 0;
+    overflow-x: auto;
+    padding: 1.25rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.db-service ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.db-service li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #eee;
+    overflow-wrap: anywhere;
+}
+
+.db-service li:last-child {
+    border-bottom: 0;
+}
+
+/* Samme udseende på knapper og formularfelter. */
+button, select, input:not([type="checkbox"]) {
+    min-height: 36px;
+    max-width: 100%;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    color: #222;
+    background: #fff;
+    font: inherit;
+}
+
+button, select {
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    background: #eee;
+    border-color: #666;
+}
+
+button[type="submit"] {
+    color: #fff;
+    background: #333;
+    border-color: #333;
+}
+
+button[type="submit"]:hover {
+    background: #111;
+}
+
+button:disabled, input:disabled {
+    color: #666;
+    background: #eee;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 2px solid #333;
+    outline-offset: 3px;
+}
+
+label {
+    font-weight: 600;
+}
+
+/* Tabellen får tydelige kolonner og diskrete striber. */
+.table {
+    margin: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.7rem;
+    border-color: #ddd;
+    vertical-align: middle;
+}
+
+.table th {
+    background: #eee;
+    white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) td {
+    background: #fafafa;
+}
+
+.table tbody tr:hover td {
+    background: #f0f0f0;
+}
+
+.table button {
+    min-width: 36px;
+    padding: 0.25rem;
+}
+
+/* Det fælles vindue til opret og rediger. */
+dialog {
+    width: min(32rem, calc(100vw - 2rem));
+    max-height: 90vh;
+    margin: auto;
+    padding: 1.5rem;
+    overflow-y: auto;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    color: #222;
+    background: #fff;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
+}
+
+dialog::backdrop {
+    background: rgb(0 0 0 / 40%);
+}
+
+dialog input:not([type="checkbox"]) {
+    width: 100%;
+    margin-top: 0.25rem;
+}
+
+dialog button {
+    margin: 0.25rem 0.4rem 0 0;
+}
+
+input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #333;
+}
+
+/* Status og fejl vises med tekst og en grå ramme. */
+[role="status"], [role="alert"], .blazor-error-boundary {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    border: 1px solid #aaa;
+    background: #f4f4f4;
+    color: #222;
+}
+
+.invalid {
+    outline: 2px solid #555;
+}
+
+.validation-message {
+    color: #333;
+    font-weight: 600;
+}
+
+a {
+    color: #333;
+}
+
+#blazor-error-ui {
+    display: none;
+    border-color: #aaa;
+    background: #eee;
+    color: #222;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    float: right;
+}
+
+.blazor-error-boundary::after {
+    content: "An error has occurred.";
+}

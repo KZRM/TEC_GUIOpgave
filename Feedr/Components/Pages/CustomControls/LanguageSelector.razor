@@ -1,0 +1,15 @@
+@* Usability 1: En genbrugelig custom control med billede og sprogvalg. *@
+<img src="images/language.svg" alt="" width="24" height="24" />
+<label for="language">Sprog:</label>
+<select id="language" @bind:get="Language" @bind:set="ChangeLanguage">
+    <option value="@Language.Danish">Dansk</option>
+    <option value="@Language.English">English</option>
+</select>
+
+@code {
+    [Parameter] public Language Language { get; set; } = Language.Danish;
+    [Parameter] public EventCallback<Language> LanguageChanged { get; set; }
+
+    // Send valget til Home, som gemmer det i UiState og opdaterer teksterne.
+    private Task ChangeLanguage(Language language) => LanguageChanged.InvokeAsync(language);
+}

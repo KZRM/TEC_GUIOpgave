@@ -1,0 +1,38 @@
+# Build og tests
+[Bb]in/
+[Oo]bj/
+TestResults/
+[Aa]rtifacts/
+*.log
+
+# Lokale editorindstillinger
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Midlertidige filer og backups
+~$*
+*.tmp
+*.bak
+*.orig
+backups/
+.DS_Store
+Thumbs.db
+
+# Lokale indstillinger og hemmeligheder
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+
+# Lokale databasefiler
+*.mdf
+*.ldf
+*.ndf
