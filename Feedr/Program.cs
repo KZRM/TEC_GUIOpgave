@@ -27,6 +27,13 @@ builder.Services.AddScoped<UiState>();
 
 var app = builder.Build();
 
+// Opret databasen og eksempeldata ved første start. Eksisterende data bevares.
+await using (var db = await app.Services
+    .GetRequiredService<IDbContextFactory<FeedrDBContext>>().CreateDbContextAsync())
+{
+    await DatabaseInitializer.InitializeAsync(db);
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
