@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Feedr filklient</title>
+    <!-- 2.2.1: Hele klienten består af HTML, CSS og JavaScript. -->
+    <link rel="stylesheet" href="./style.css">
+    <script src="./lib/jquery.min.js" defer></script>
+    <script src="./config.js" defer></script>
+    <script src="./app.js" defer></script>
+</head>
+<body>
+    <main>
+        <header>
+            <p class="brand">Feedr</p>
+            <h1>Filer</h1>
+            <p>Upload en fil, eller hent en fil fra oversigten.</p>
+        </header>
+
+        <section aria-labelledby="upload-title">
+            <h2 id="upload-title">Upload fil</h2>
+            <form id="upload-form">
+                <label for="file">Vælg en fil</label>
+                <input id="file" name="file" type="file" accept=".txt,.pdf,.docx,.csv" aria-describedby="file-help" required>
+                <p id="file-help">TXT, PDF, DOCX eller CSV. Maks. 10 MB.</p>
+                <button id="upload-button" type="submit">Upload</button>
+            </form>
+        </section>
+
+        <p id="status" role="status" aria-live="polite" hidden></p>
+
+        <section aria-labelledby="files-title">
+            <div class="section-heading">
+                <h2 id="files-title">Filer på serveren</h2>
+                <button id="refresh-button" type="button">Opdater oversigt</button>
+            </div>
+            <p id="file-count">Henter filer...</p>
+            <p id="empty-message" class="empty-state" hidden>Der er ingen filer endnu. Vælg en fil ovenfor og tryk Upload.</p>
+            <div class="table-wrap" id="file-table" hidden>
+                <table aria-labelledby="files-title">
+                    <thead>
+                        <tr><th scope="col">Filnavn</th><th scope="col">Størrelse</th><th scope="col">Uploadet</th><th scope="col">Handling</th></tr>
+                    </thead>
+                    <tbody id="file-list"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- 2.2.4: Skabelonen genbruges, når JavaScript opdaterer filoversigten. -->
+    <template id="file-row">
+        <tr>
+            <td class="file-name"></td>
+            <td class="file-size"></td>
+            <td class="file-date"></td>
+            <td><button class="download-button" type="button">Download</button></td>
+        </tr>
+    </template>
+</body>
+</html>

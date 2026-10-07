@@ -48,8 +48,8 @@ public class Repository(IDbContextFactory<FeedrDBContext> contextFactory)
         // Fill henter data og klarer selv åbning og lukning af forbindelsen.
         using var adapter = new SqlDataAdapter(sql, (SqlConnection)db.Database.GetDbConnection());
 
-       // Find også tabellens primærnøgle, så den kan låses ved redigering.
-adapter.MissingSchemaAction = MissingSchemaAction.AddWithKey;
+        // Find også tabellens primærnøgle, så den kan låses ved redigering.
+        adapter.MissingSchemaAction = MissingSchemaAction.AddWithKey;
         var result = new DataTable();
         adapter.Fill(result);
         return result;

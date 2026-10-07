@@ -1,8 +1,9 @@
 /* Sidens grundlayout. */
 html, body {
     font-family: Arial, sans-serif;
-    color: #222;
-    background: #f4f4f4;
+    color: #243746;
+    background: #f2f6f8;
+    line-height: 1.5;
 }
 
 header[role="toolbar"] {
@@ -10,8 +11,28 @@ header[role="toolbar"] {
     border-bottom: 1px solid #ddd;
 }
 
+.app-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    padding: .8rem 1.25rem;
+    background: #fff;
+    border-bottom: 1px solid #d6e0e5;
+}
+
+.app-navigation a {
+    padding: .5rem .75rem;
+    border-radius: 6px;
+    color: #285872;
+    text-decoration: none;
+}
+
+.app-navigation a:hover { background: #edf4f8; }
+.app-navigation .app-brand { margin-right: auto; font-size: 1.2rem; font-weight: 700; }
+
 main {
-    max-width: 1600px;
+    max-width: 1280px;
     margin: 0 auto;
     padding-bottom: 2rem;
 }
@@ -42,10 +63,11 @@ h3 {
 .baseContainer {
     min-width: 0;
     overflow-x: auto;
-    padding: 1.25rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 1.5rem;
+    border: 1px solid #d6e0e5;
+    border-radius: 10px;
     background: #fff;
+    box-shadow: 0 3px 12px rgb(36 55 70 / 4%);
 }
 
 .db-service ul {
@@ -66,12 +88,12 @@ h3 {
 
 /* Samme udseende på knapper og formularfelter. */
 button, select, input:not([type="checkbox"]) {
-    min-height: 36px;
+    min-height: 40px;
     max-width: 100%;
     padding: 0.4rem 0.7rem;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    color: #222;
+    border: 1px solid #bbcdd7;
+    border-radius: 6px;
+    color: #243746;
     background: #fff;
     font: inherit;
 }
@@ -81,18 +103,18 @@ button, select {
 }
 
 button:hover:not(:disabled) {
-    background: #eee;
-    border-color: #666;
+    background: #edf4f8;
+    border-color: #285872;
 }
 
 button[type="submit"] {
     color: #fff;
-    background: #333;
-    border-color: #333;
+    background: #285872;
+    border-color: #285872;
 }
 
 button[type="submit"]:hover {
-    background: #111;
+    background: #1d4358;
 }
 
 button:disabled, input:disabled {
@@ -103,7 +125,7 @@ button:disabled, input:disabled {
 }
 
 button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible {
-    outline: 2px solid #333;
+    outline: 3px solid #80b1c8;
     outline-offset: 3px;
 }
 
@@ -119,26 +141,27 @@ label {
 
 .table > :not(caption) > * > * {
     padding: 0.7rem;
-    border-color: #ddd;
+    border-color: #e4ebef;
     vertical-align: middle;
 }
 
 .table th {
-    background: #eee;
+    background: #f5f8fa;
+    color: #526774;
     white-space: nowrap;
 }
 
 .table tbody tr:nth-child(even) td {
-    background: #fafafa;
+    background: #fbfcfd;
 }
 
 .table tbody tr:hover td {
-    background: #f0f0f0;
+    background: #f0f6f9;
 }
 
 .table button {
     min-width: 36px;
-    padding: 0.25rem;
+    padding: .4rem .7rem;
 }
 
 /* Det fælles vindue til opret og rediger. */
@@ -148,9 +171,9 @@ dialog {
     margin: auto;
     padding: 1.5rem;
     overflow-y: auto;
-    border: 1px solid #aaa;
-    border-radius: 6px;
-    color: #222;
+    border: 1px solid #d6e0e5;
+    border-radius: 10px;
+    color: #243746;
     background: #fff;
     box-shadow: 0 8px 32px rgb(0 0 0 / 20%);
 }
@@ -171,16 +194,17 @@ dialog button {
 input[type="checkbox"] {
     width: 1.1rem;
     height: 1.1rem;
-    accent-color: #333;
+    accent-color: #285872;
 }
 
-/* Status og fejl vises med tekst og en grå ramme. */
+/* Status og fejl vises som tekst tæt på handlingen. */
 [role="status"], [role="alert"], .blazor-error-boundary {
     margin: 1rem 0;
     padding: 0.75rem;
-    border: 1px solid #aaa;
-    background: #f4f4f4;
-    color: #222;
+    border: 1px solid #bdd4df;
+    border-radius: 8px;
+    background: #eaf3f8;
+    color: #243746;
 }
 
 .invalid {
@@ -193,7 +217,7 @@ input[type="checkbox"] {
 }
 
 a {
-    color: #333;
+    color: #285872;
 }
 
 #blazor-error-ui {
@@ -209,5 +233,23 @@ a {
 }
 
 .blazor-error-boundary::after {
-    content: "An error has occurred.";
+    content: "Der opstod en fejl.";
+}
+
+.files-page { max-width: 1100px; }
+.files-page h1 { margin-bottom: .5rem; }
+.page-description { color: #526774; margin-bottom: 1.5rem; }
+.file-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.file-count { margin: 0; padding: .35rem .7rem; border-radius: 6px; background: #edf4f8; color: #285872; }
+.files-page .table { min-width: 550px; }
+.files-page .table td:first-child { overflow-wrap: anywhere; }
+button.delete-button { color: #8a3531; border-color: #ddbbba; }
+button.delete-button:hover { background: #fff0ef; border-color: #8a3531; }
+.empty-state { margin: 1.5rem 0 0; padding: 1.5rem; border: 1px dashed #d6e0e5; border-radius: 8px; color: #526774; text-align: center; }
+
+@media (max-width: 800px) {
+    .splitContainer { grid-template-columns: 1fr; }
+    .app-navigation { padding: .6rem; }
+    .app-navigation .app-brand { flex-basis: 100%; }
+    .baseContainer { padding: 1rem; }
 }

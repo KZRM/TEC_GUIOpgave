@@ -36,3 +36,6 @@ appsettings.*.Local.json
 *.mdf
 *.ldf
 *.ndf
+
+# Uploadede filer til JavaScript-opgaven
+Feedr/App_Data/

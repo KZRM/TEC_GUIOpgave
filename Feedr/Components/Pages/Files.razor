@@ -1,0 +1,94 @@
+@page "/files"
+@using Feedr.Models
+@using Feedr.Services
+@inject FileService FileService
+
+<PageTitle>Filer på serveren</PageTitle>
+
+<main class="px-3 files-page">
+    <h1>Filer på serveren</h1>
+    <p class="page-description">Se og slet filer, som er modtaget fra klienten.</p>
+    <section class="baseContainer" aria-label="Uploadede filer">
+        <div class="file-toolbar">
+            <p class="file-count">@files.Length filer</p>
+            <button type="button" @onclick="LoadFiles">Opdater oversigt</button>
+        </div>
+
+        @if (message is not null)
+        {
+            <p role="status">@message</p>
+        }
+
+        @if (files.Length == 0)
+        {
+            <p class="empty-state">Der er ingen filer endnu. <a href="/client/index.html" data-enhance-nav="false">Åbn filklienten</a> og upload en fil.</p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr><th scope="col">Filnavn</th><th scope="col">Størrelse</th><th scope="col">Uploadet</th><th scope="col">Handling</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var file in files)
+                    {
+                        @* 2.1: Blazor opdaterer filoversigten efter sletning. *@
+                        <tr @key="file.Id">
+                            <td>@file.Name</td>
+                            <td>@Math.Ceiling(file.Size / 1024d) KB</td>
+                            <td>@file.UploadedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</td>
+                            <td>
+                                @if (pendingDelete == file.Id)
+                                {
+                                    <button type="button" class="delete-button" @onclick="() => DeleteFile(file.Id)">Bekræft sletning</button>
+                                    <button type="button" @onclick="() => pendingDelete = null">Fortryd</button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="delete-button" aria-label="@($"Slet {file.Name}")" @onclick="() => pendingDelete = file.Id">Slet</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+</main>
+
+@code {
+    private StoredFile[] files = [];
+    private Guid? pendingDelete;
+    private string? message;
+
+    protected override void OnInitialized() => LoadFiles();
+
+    private void LoadFiles()
+    {
+        try
+        {
+            files = FileService.ListFiles();
+            pendingDelete = null;
+            message = null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            message = "Filoversigten kunne ikke hentes. Prøv igen.";
+        }
+    }
+
+    private void DeleteFile(Guid id)
+    {
+        try
+        {
+            var deleted = FileService.Delete(id);
+            files = FileService.ListFiles();
+            pendingDelete = null;
+            message = deleted ? "Filen er slettet." : "Filen var allerede slettet.";
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            message = "Filen kunne ikke slettes. Prøv igen.";
+        }
+    }
+}

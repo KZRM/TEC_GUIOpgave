@@ -1,5 +1,6 @@
 ﻿@* 1.2: Vi bruger Blazors indbyggede delvise rendering. InteractiveServer sættes i App.razor. *@
 @inject Feedr.DBAccess.Repository Repository
+@page "/"
 @inject Feedr.State.UiState State
 
 @* 2.2: Sprogvalget ændrer teksterne. Den valgte tabel og dens data bevares. *@
@@ -31,7 +32,7 @@
             </p>
 
             @* 1.3: Vores partial view. 
-            Når selectedTable ændres, ændres @key, og Blazor erstatter den gamle DatabaseTable med en ny.. *@
+            Når selectedTable ændres, ændres @key, og Blazor erstatter den gamle DatabaseTable med en ny. *@
             <DatabaseTable @key="selectedTable"
                            TableName="@selectedTable"
                            Language="@State.Language"
